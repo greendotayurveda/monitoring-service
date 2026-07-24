@@ -2,6 +2,7 @@
 
 ## 2026-07-24
 
+- Tailscale access: document that `BIND_ADDRESS=127.0.0.1` blocks `http://100.x:3010` while Jellyfin/qBittorrent work; default `.env.example` now uses `0.0.0.0` for the same access pattern.
 - Strengthened `fix-permissions.sh` with `chmod a+rwX` + busybox `chown` (handles Docker userns cases where host `chown` alone fails).
 - Confirmed homeserver crash-loop root cause from logs: Prometheus `permission denied` on `/prometheus/queries.active`; Loki `mkdir /loki/rules: permission denied`. Documented in `brain/operations/troubleshooting.md`.
 - Homeserver still on old compose: Grafana bind fails on **:3000**; must use **:3010**.

@@ -52,15 +52,14 @@ Defaults avoid common clashes: Grafana **3010**, Uptime Kuma **3002**, cAdvisor 
 
 ## Bind address
 
-Default `BIND_ADDRESS=127.0.0.1` (localhost only).
-
-For LAN access from trusted network only:
+Default in `.env.example` is `BIND_ADDRESS=0.0.0.0` so UIs are reachable the same way as Jellyfin/qBittorrent over **Tailscale IP + port**.
 
 ```env
 BIND_ADDRESS=0.0.0.0
+GF_SERVER_ROOT_URL=http://100.x.x.x:3010
 ```
 
-Then restrict with host firewall. Prefer SSH tunnel or reverse proxy (post-MVP) over public exposure.
+If you keep `BIND_ADDRESS=127.0.0.1`, remote access needs an SSH tunnel to `127.0.0.1` on the client (not the Tailscale IP). Restrict public WAN exposure with the host firewall; Tailscale mesh access is the intended remote path.
 
 ## Verify after reboot
 

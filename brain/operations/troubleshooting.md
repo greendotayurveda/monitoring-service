@@ -59,6 +59,23 @@ grep -E 'GRAFANA_PORT|3010' .env || echo 'GRAFANA_PORT=3010' | sudo tee -a .env
 docker compose up -d --force-recreate grafana
 ```
 
+## Tailscale: Jellyfin works but Grafana :3010 does not
+
+**Cause:** `ms-grafana` was published on `127.0.0.1` only. Jellyfin/qBittorrent listen on `0.0.0.0`, so `http://100.x.x.x:<port>` works for them.
+
+**Fix (match Jellyfin pattern):**
+
+```bash
+cd /opt/monitoring-service
+# .env
+# BIND_ADDRESS=0.0.0.0
+# GF_SERVER_ROOT_URL=http://<tailscale-ip>:3010
+docker compose up -d --force-recreate grafana
+docker ps --format '{{.Names}}\t{{.Ports}}' | grep ms-grafana
+```
+
+Open `http://<tailscale-ip>:3010`. Ports should show `0.0.0.0:3010->3000/tcp` (or `*:3010`), not only `127.0.0.1:3010`.
+
 ## False-positive health checks
 
 If health-check says Grafana OK on `:3000` or Uptime Kuma OK on `:3001` but `ms-grafana` is missing from `docker compose ps`, you are hitting **other** containers. Use the updated `scripts/health-check.sh` that checks `ms-*` names and ports `3010` / `3002`.
