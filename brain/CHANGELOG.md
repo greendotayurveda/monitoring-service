@@ -2,8 +2,9 @@
 
 ## 2026-07-24
 
-- Fixed Loki WAL crash for real: use correct flags `-ingester.wal-enabled=false` / `-ingester.wal-dir=/loki/wal`, root entrypoint to mkdir `/wal`, force-recreate notes for homeserver.
-- Prior attempts (bind-mounts, dotted CLI flags) were insufficient when server still ran old container/config.
+- Loki: use inline `sh -c` entrypoint + `tmpfs` on `/wal` so permission denied cannot recur; disable WAL with `-ingester.wal-enabled=false`.
+- Fixed Loki WAL crash for real: hyphenated CLI flags; prior bind-mount-only attempts were insufficient.
+
 - Strengthened `fix-permissions.sh` with `chmod a+rwX` + busybox `chown` (handles Docker userns cases where host `chown` alone fails).
 - Confirmed homeserver crash-loop root cause from logs: Prometheus `permission denied` on `/prometheus/queries.active`; Loki `mkdir /loki/rules: permission denied`. Documented in `brain/operations/troubleshooting.md`.
 - Homeserver still on old compose: Grafana bind fails on **:3000**; must use **:3010**.

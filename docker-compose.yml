@@ -86,18 +86,25 @@ services:
     container_name: ms-loki
     restart: unless-stopped
     user: "0:0"
-    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    # Inline entrypoint (no external script) so Windows CRLF / missing pull cannot break startup.
+    # tmpfs makes /wal always writable even if WAL is somehow still enabled.
+    entrypoint: ["/bin/sh", "-c"]
     command:
-      - -config.file=/etc/loki/config.yml
-      # Loki flag names use hyphens (not ingester.wal.enabled)
-      - -ingester.wal-enabled=false
-      - -ingester.wal-dir=/loki/wal
+      - |
+        set -eu
+        mkdir -p /wal /rules /loki/wal /loki/chunks /loki/rules /loki/rules-temp /loki/compactor /loki/tsdb-index /loki/tsdb-cache
+        chmod -R 0777 /wal /rules /loki || true
+        echo "Starting Loki with WAL disabled; /wal prepared"
+        exec /usr/bin/loki \
+          -config.file=/etc/loki/config.yml \
+          -ingester.wal-enabled=false \
+          -ingester.wal-dir=/loki/wal
+    tmpfs:
+      - /wal:mode=1777
+      - /rules:mode=1777
     volumes:
-      - ./scripts/loki-entrypoint.sh:/entrypoint.sh:ro
       - ./config/loki/config.yml:/etc/loki/config.yml:ro
       - ./data/loki:/loki
-      - ./data/loki/wal:/wal
-      - ./data/loki/rules:/rules
     expose:
       - "3100"
     networks:

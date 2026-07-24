@@ -61,33 +61,28 @@ docker compose up -d --force-recreate grafana
 
 ## Loki: `creating WAL folder at "/wal": mkdir wal: permission denied`
 
-**Cause:** Loki still enables WAL unless disabled with the **hyphenated** flag `-ingester.wal-enabled=false` (not `ingester.wal.enabled`). Old containers may also still be running.
+**Cause:** Loki tries to mkdir `/wal` (default WAL path). Host bind mounts + uid 10001 failed on this server.
 
 **Fix in repo:**
-- CLI `-ingester.wal-enabled=false`
-- Root entrypoint `scripts/loki-entrypoint.sh` creates `/wal`
-- `user: "0:0"`
+- Inline entrypoint (`sh -c`) prepares dirs
+- `tmpfs` mount on `/wal` (always writable)
+- `-ingester.wal-enabled=false`
+
+After pull, `docker ps` for Loki should show `/bin/sh -c` (not only `/usr/bin/loki -conf`).
 
 ```bash
 cd /opt/monitoring-service
 git pull
-# MUST show wal-enabled=false:
-grep -n 'wal-enabled' docker-compose.yml
-
-sudo mkdir -p data/loki/wal data/loki/rules data/loki/rules-temp
-sudo chmod -R a+rwX data/loki
-chmod +x scripts/loki-entrypoint.sh
+grep -A20 'container_name: ms-loki' docker-compose.yml | head -25
 
 docker compose stop loki
-docker rm -f ms-loki 2>/dev/null || true
+docker rm -f ms-loki
 docker compose up -d --force-recreate loki
-
-docker inspect ms-loki --format 'user={{.Config.User}} cmd={{json .Config.Cmd}}'
-docker compose ps | grep loki
-docker logs --tail 20 ms-loki
+docker ps --no-trunc | grep ms-loki
+docker logs --tail 30 ms-loki
 ```
 
-If `cmd` does not contain `wal-enabled=false`, you are not on the latest pull.
+You should see log line `Starting Loki with WAL disabled; /wal prepared` and status **Up**.
 
 ## Why healthchecks use `localhost` / `127.0.0.1`
 
