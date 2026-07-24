@@ -16,3 +16,10 @@ Whenever you change application files (`docker-compose.yml`, `config/**`, `scrip
 5. Do not leave `brain/` stale relative to the running compose/config reality.
 
 Do not invent features in docs that are not implemented. Mark post-MVP items clearly.
+
+# Git workflow (mandatory)
+
+- Commit and push **only from this Windows repository**.
+- Do not instruct permanent hand-edits of YAML on `/opt/monitoring-service`; fix files here, commit, then have the server `git pull` and recreate containers.
+- Never commit `.env`, `data/**`, or `backups/**`.
+- See `brain/operations/git-workflow.md`.

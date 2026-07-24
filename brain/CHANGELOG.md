@@ -2,6 +2,7 @@
 
 ## 2026-07-24
 
+- Documented git workflow: commit/push only from Windows repo; homeserver `git pull` + compose recreate (no hand-edited YAML on server).
 - Fixed Loki Explore **404**: removed Loki `path_prefix`; Grafana `http://loki:3100`; Promtail `http://loki:3100/api/v1/push`.
 - Fixed empty Grafana Loki Explore: Promtail Docker SD without `__path__`; removed `drop.older_than`.
 - Promtail/Loki: persist positions in `data/promtail`; Loki `reject_old_samples_max_age: 336h` + `unordered_writes`.

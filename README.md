@@ -5,6 +5,8 @@ Production-oriented observability stack for Ubuntu Server (Docker Compose).
 **Canonical documentation lives in [`brain/`](brain/README.md).**  
 `plan.md` is the product plan; `brain/` is the living implementation knowledge base.
 
+**Git:** edit and commit only on this machine; on the homeserver run `git pull` then `docker compose up -d`. See [`brain/operations/git-workflow.md`](brain/operations/git-workflow.md).
+
 ## Quick start (Ubuntu)
 
 ```bash

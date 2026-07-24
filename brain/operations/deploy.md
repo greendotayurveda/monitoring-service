@@ -23,10 +23,12 @@ docker compose up -d
 
 ## Homeserver with existing Grafana / occupied ports
 
-Sync updated files into `/opt/monitoring-service`, then:
+**Always update YAML in the Windows repo, commit/push there, then `git pull` on the server.**  
+Do not permanently patch compose/config on the homeserver (see [git-workflow.md](git-workflow.md)).
 
 ```bash
 cd /opt/monitoring-service
+git pull
 chmod +x scripts/*.sh
 ./scripts/apply-homeserver-fix.sh
 ```

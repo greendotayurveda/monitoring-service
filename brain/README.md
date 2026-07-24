@@ -14,6 +14,7 @@ If code or config changes, **this folder must be updated in the same change**.
 | [operations/alerts.md](operations/alerts.md) | Alert ownership and Telegram |
 | [operations/security.md](operations/security.md) | Bind address, secrets, socket |
 | [operations/troubleshooting.md](operations/troubleshooting.md) | Crash loops, permissions, false health OK |
+| [operations/git-workflow.md](operations/git-workflow.md) | Commit here, pull on server only |
 | [reference/services.md](reference/services.md) | Compose services |
 | [reference/ports.md](reference/ports.md) | Published ports |
 | [reference/env-vars.md](reference/env-vars.md) | Environment variables |
