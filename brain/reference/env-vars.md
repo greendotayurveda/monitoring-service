@@ -8,6 +8,7 @@ Runtime file: `.env` (not committed)
 | `BIND_ADDRESS` | No | `127.0.0.1` | Host interface for published ports |
 | `GRAFANA_PORT` | No | `3010` | Host port for `ms-grafana` |
 | `UPTIME_KUMA_PORT` | No | `3002` | Host port for Uptime Kuma UI |
+| `LOKI_PORT` | No | `3100` | Host port for Loki API (no UI) |
 | `PROMETHEUS_PORT` | No | `9090` | Host port for Prometheus |
 | `ALERTMANAGER_PORT` | No | `9093` | Host port for Alertmanager |
 | `GF_SECURITY_ADMIN_USER` | No | `admin` | Grafana admin user |

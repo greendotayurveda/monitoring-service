@@ -105,8 +105,9 @@ services:
     volumes:
       - ./config/loki/config.yml:/etc/loki/config.yml:ro
       - ./data/loki:/loki
-    expose:
-      - "3100"
+    ports:
+      # Optional API access (no full UI). Explore logs in Grafana instead.
+      - "${BIND_ADDRESS:-127.0.0.1}:${LOKI_PORT:-3100}:3100"
     networks:
       monitoring:
         aliases:

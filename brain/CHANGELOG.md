@@ -2,8 +2,8 @@
 
 ## 2026-07-24
 
-- Loki: use inline `sh -c` entrypoint + `tmpfs` on `/wal` so permission denied cannot recur; disable WAL with `-ingester.wal-enabled=false`.
-- Fixed Loki WAL crash for real: hyphenated CLI flags; prior bind-mount-only attempts were insufficient.
+- Publish Loki on host port **3100** (`LOKI_PORT`) for API/debug; remind that Loki has no browse UI (use Grafana Explore).
+- Loki: inline `sh -c` entrypoint + `tmpfs` on `/wal`; WAL disabled via `-ingester.wal-enabled=false`.
 
 - Strengthened `fix-permissions.sh` with `chmod a+rwX` + busybox `chown` (handles Docker userns cases where host `chown` alone fails).
 - Confirmed homeserver crash-loop root cause from logs: Prometheus `permission denied` on `/prometheus/queries.active`; Loki `mkdir /loki/rules: permission denied`. Documented in `brain/operations/troubleshooting.md`.

@@ -10,6 +10,7 @@ All host binds use `${BIND_ADDRESS:-127.0.0.1}`.
 | 3002 | `UPTIME_KUMA_PORT` | 3001 | Uptime Kuma |
 | 9090 | `PROMETHEUS_PORT` | 9090 | Prometheus |
 | 9093 | `ALERTMANAGER_PORT` | 9093 | Alertmanager |
+| 3100 | `LOKI_PORT` | 3100 | Loki (API only, no UI) |
 
 ## Internal only (no host publish)
 
@@ -19,8 +20,9 @@ These are scraped/reached on the `monitoring` Docker network only:
 | ------- | -------------- |
 | Node Exporter | 9100 |
 | cAdvisor | 8080 |
-| Loki | 3100 |
 | Promtail | 9080 |
+
+Loki is also published on **3100** for API/debug (`/ready`, `/metrics`, LogQL HTTP API). Use **Grafana Explore** for browsing logs.
 
 ## Homeserver conflict map (observed)
 
