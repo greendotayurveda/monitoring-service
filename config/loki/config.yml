@@ -33,6 +33,17 @@ storage_config:
     active_index_directory: /loki/tsdb-index
     cache_location: /loki/tsdb-cache
 
+# Default WAL path is /wal (not writable). Keep it on the data volume.
+ingester:
+  wal:
+    enabled: true
+    dir: /loki/wal
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+
 limits_config:
   retention_period: 336h
   reject_old_samples: true

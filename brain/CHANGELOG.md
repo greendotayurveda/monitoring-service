@@ -2,9 +2,9 @@
 
 ## 2026-07-24
 
-- Fixed Grafana→Loki DNS/`server misbehaving`: keep service on `monitoring` network with alias `loki`; Promtail push URL restored to `/loki/api/v1/push` (Grafana queries that prefix); healthy `depends_on` for Grafana/Promtail.
-- Documented git workflow: commit/push only from Windows repo; homeserver `git pull` + compose recreate (no hand-edited YAML on server).
-- Fixed Loki Explore path handling; Grafana datasource base `http://loki:3100`.
+- Fixed Loki crash-loop: set `ingester.wal.dir: /loki/wal` (default `/wal` is not writable for uid 10001).
+- Fixed Grafana→Loki DNS/`server misbehaving`: keep service on `monitoring` network with alias `loki`; Promtail push URL restored to `/loki/api/v1/push`; healthy `depends_on` for Grafana/Promtail.
+- Documented git workflow: commit/push only from Windows repo; homeserver `git pull` + compose recreate.
 - Promtail Docker SD without `__path__`; positions in `data/promtail`.
 - Tailscale: `BIND_ADDRESS=0.0.0.0` for Jellyfin-like access.
 - Strengthened `fix-permissions.sh` with `chmod a+rwX` + busybox `chown` (handles Docker userns cases where host `chown` alone fails).

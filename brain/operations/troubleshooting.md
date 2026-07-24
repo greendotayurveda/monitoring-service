@@ -59,6 +59,22 @@ grep -E 'GRAFANA_PORT|3010' .env || echo 'GRAFANA_PORT=3010' | sudo tee -a .env
 docker compose up -d --force-recreate grafana
 ```
 
+## Loki: `creating WAL folder at "/wal": mkdir wal: permission denied`
+
+**Cause:** Ingester default WAL path is `/wal` on the container root. Loki runs as uid `10001` and cannot create it there.
+
+**Fix:** set WAL under the data mount (`ingester.wal.dir: /loki/wal`) — already in `config/loki/config.yml`.
+
+```bash
+cd /opt/monitoring-service
+git pull
+sudo mkdir -p data/loki/wal
+sudo chmod -R a+rwX data/loki
+./scripts/fix-permissions.sh
+docker compose up -d --force-recreate loki
+docker logs --tail 30 ms-loki
+```
+
 ## Grafana Explore → `lookup loki on 127.0.0.11:53: server misbehaving`
 
 **Cause:** `ms-grafana` cannot resolve Docker DNS name `loki` (wrong/missing network, Loki down, or broken Docker DNS).

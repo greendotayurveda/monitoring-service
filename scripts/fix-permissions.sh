@@ -14,9 +14,11 @@ mkdir -p \
   data/loki/tsdb-cache \
   data/loki/compactor \
   data/loki/rules-temp \
+  data/loki/wal \
   data/grafana \
   data/alertmanager \
   data/uptime-kuma \
+  data/promtail \
   backups
 
 echo "Setting ownership (best effort)..."
