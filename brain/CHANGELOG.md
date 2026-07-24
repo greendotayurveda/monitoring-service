@@ -2,6 +2,9 @@
 
 ## 2026-07-24
 
+- Strengthened `fix-permissions.sh` with `chmod a+rwX` + busybox `chown` (handles Docker userns cases where host `chown` alone fails).
+- Confirmed homeserver crash-loop root cause from logs: Prometheus `permission denied` on `/prometheus/queries.active`; Loki `mkdir /loki/rules: permission denied`. Documented in `brain/operations/troubleshooting.md`.
+- Homeserver still on old compose: Grafana bind fails on **:3000**; must use **:3010**.
 - Homeserver recovery: cAdvisor/Node Exporter/Loki no longer publish host ports (avoids **8080** clash; scrape stays on Docker network).
 - Default `GRAFANA_PORT` changed to **3010** (host **3000** already has another Grafana).
 - Added `scripts/fix-permissions.sh` and `scripts/apply-homeserver-fix.sh` for data dir ownership (Prometheus 65534, Loki 10001, Grafana 472).
