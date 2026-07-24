@@ -130,18 +130,13 @@ On the server, paste the block below, then recreate.
 
 ## Grafana Explore → `{job="docker"}` empty but `{job="systemd-journal"}` works
 
-**Why:** Journal scrape streams continuously and recovered after Loki came back. Docker scrape (Docker API mode) backfilled while Loki returned `empty ring` / DNS errors; those batches never landed, and Docker positions/cursors advanced so `{job="docker"}` stayed empty even though Promtail logged `added Docker target` / `finished transferring logs`.
+**Root cause (seen on this stack):** `pipeline_stages: docker: {}` must only be used when tailing **json-file** logs. With Promtail `docker_sd_configs` (Docker **API** scrape), lines are already plain text; `docker: {}` breaks timestamps and `drop: older_than` then drops **all** Docker lines. Journal keeps working.
 
-**Fix:** use file-based Docker SD (`__path__` + `pipeline_stages: docker`) and reset positions after Loki is healthy:
+**Fix:** Docker job uses API scrape + `drop: older_than: 1h` only (no `docker:` stage). `scrape=docker-api` avoids old stream-head conflicts.
 
 ```bash
 cd /opt/monitoring-service
 git pull
-docker exec ms-loki wget -qO- http://127.0.0.1:3100/ready; echo
-
-# Confirm Docker uses json-file (needed for __path__ file tail)
-docker info --format '{{.LoggingDriver}}'
-
 docker compose stop promtail
 sudo rm -f data/promtail/positions.yaml
 docker compose up -d --force-recreate promtail
@@ -149,11 +144,10 @@ sleep 20
 
 curl -s http://127.0.0.1:3100/loki/api/v1/label/job/values; echo
 docker logs ms-promtail --tail 30
+docker exec ms-promtail wget -qO- http://127.0.0.1:9080/metrics | grep -E 'promtail_sent_entries_total|promtail_dropped_entries_total' | head
 ```
 
-Expect `["docker","systemd-journal"]`. Then Explore `{job="docker"}` (last 15m).
-
-If `LoggingDriver` is `journald` (not `json-file`), file-tail will not see container logs — use journal queries or switch Docker to `json-file`.
+Expect `["docker","systemd-journal"]`.
 
 ## Grafana Explore → Loki returns no logs
 

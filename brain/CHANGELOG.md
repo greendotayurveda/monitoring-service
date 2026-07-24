@@ -2,6 +2,7 @@
 
 ## 2026-07-24
 
+- Promtail Docker: remove `docker:` pipeline stage from API scrape (it was dropping all container lines); keep `drop: older_than: 1h` + `scrape=docker-api`.
 - Promtail: drop lines older than **1h**, add `scrape=json-file` label so Docker streams are not blocked by earlier "too far behind" stream heads; journal `max_age` 2h.
 - Promtail: drop log lines older than **2h** before push so Docker file backfill does not spam Loki `entry too far behind` 400s after positions reset.
 - Promtail Docker scrape: switch to file-tail via `__path__` + `docker` pipeline (Docker API mode lost lines when Loki was recreating; journal still worked).
