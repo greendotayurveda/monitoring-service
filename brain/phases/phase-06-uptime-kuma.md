@@ -5,6 +5,7 @@
 ## Deliverables
 
 - [x] Uptime Kuma container + persistent `data/uptime-kuma`
+- [x] Host port configurable (`UPTIME_KUMA_PORT`, default **3002** to avoid clashes with existing Kuma on 3001)
 - [ ] Create admin user (first boot on server)
 - [ ] Add critical HTTP/HTTPS/TCP monitors
 - [ ] Configure Kuma Telegram notifier (availability only)
