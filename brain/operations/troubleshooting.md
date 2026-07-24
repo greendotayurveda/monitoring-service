@@ -197,26 +197,24 @@ In Grafana Explore (last 15m):
 **Also check:** Grafana Loki datasource URL is `http://loki:3100` (Grafana appends `/loki/api/v1/...`). After recreating Loki, always recreate/restart Promtail **after** Loki is `ready`.
 ## Promtail: `entry too far behind` / HTTP 400 to Loki
 
-**Cause:** On first start (or when positions are lost in `/tmp`), Promtail backfills old Docker JSON logs. Loki rejects entries older than its accept window (`reject_old_samples_max_age`) or already behind the stream head.
+**Cause:** After clearing positions, Promtail re-reads Docker json logs from the start of each file. Loki already has a newer timestamp for that stream (or rejects far-behind lines), so batches fail with:
 
-**Impact:** Noisy logs; **recent** logs still ingest once Promtail catches up. Not a crash.
+`entry too far behind ... oldest acceptable timestamp is: ...`
 
-**Fix (in repo):**
-- Promtail drops lines older than **24h** before push
-- Positions file persisted under `data/promtail/`
-- Loki `reject_old_samples_max_age: 336h` + `unordered_writes: true`
+**Impact:** Noisy 400s; live `{job="docker"}` lines only appear after Promtail slowly burns through old file content (or never, if retries stall).
 
-On the server after syncing configs:
+**Fix (in repo):** Promtail `drop: older_than: 2h` on docker (and journal) pipelines so only recent lines are pushed.
 
 ```bash
 cd /opt/monitoring-service
-sudo mkdir -p data/promtail
-sudo chmod a+rwX data/promtail
-docker compose up -d --force-recreate loki promtail
-docker logs ms-promtail --tail 30
+git pull
+docker compose up -d --force-recreate promtail
+sleep 15
+curl -s http://127.0.0.1:3100/loki/api/v1/label/job/values; echo
+docker logs ms-promtail --tail 20
 ```
 
-In Grafana Explore → Loki, query `{job="docker"}` for the last 15 minutes — you should see fresh lines even if a few 400s remain during catch-up.
+Expect fewer/no 400s and `docker` in job values. Explore `{job="docker"}` last 15m.
 
 ## Tailscale: Jellyfin works but Grafana :3010 does not
 

@@ -26,6 +26,11 @@ scrape_configs:
         target_label: compose_project
     pipeline_stages:
       - docker: {}
+      # Skip historical backfill — Loki rejects lines too far behind the stream head
+      # ("entry too far behind"). Without this, positions resets spam 400s for hours.
+      - drop:
+          older_than: 2h
+          drop_counter_reason: older_than_2h
 
   - job_name: journal
     journal:
@@ -39,3 +44,7 @@ scrape_configs:
         target_label: unit
       - source_labels: ["__journal__hostname"]
         target_label: hostname
+    pipeline_stages:
+      - drop:
+          older_than: 2h
+          drop_counter_reason: older_than_2h

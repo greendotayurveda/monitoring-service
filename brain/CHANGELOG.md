@@ -2,6 +2,7 @@
 
 ## 2026-07-24
 
+- Promtail: drop log lines older than **2h** before push so Docker file backfill does not spam Loki `entry too far behind` 400s after positions reset.
 - Promtail Docker scrape: switch to file-tail via `__path__` + `docker` pipeline (Docker API mode lost lines when Loki was recreating; journal still worked).
 - Documented empty Explore when Promtail Docker positions advance during Loki recreate (`empty ring` / DNS); fix = clear `data/promtail/positions.yaml` and restart Promtail after Loki is ready.
 - Publish Loki on host port **3100** (`LOKI_PORT`) for API/debug; remind that Loki has no browse UI (use Grafana Explore).
