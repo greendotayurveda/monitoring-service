@@ -1,0 +1,18 @@
+---
+description: Keep /brain documentation synchronized with application changes
+alwaysApply: true
+---
+
+# Brain documentation sync (mandatory)
+
+The `brain/` folder is the living knowledge base for this Monitoring Service.
+
+Whenever you change application files (`docker-compose.yml`, `config/**`, `scripts/**`, `alerts/**`, `.env.example`, dashboards, alert rules, ports, services, env vars, phases, security, or backup behavior):
+
+1. Update the relevant docs under `brain/` in the **same change**.
+2. Add a dated entry to `brain/CHANGELOG.md` describing what changed and why.
+3. If structure or navigation changes, update `brain/README.md`.
+4. If a phase's deliverables or status change, update the matching `brain/phases/phase-XX-*.md`.
+5. Do not leave `brain/` stale relative to the running compose/config reality.
+
+Do not invent features in docs that are not implemented. Mark post-MVP items clearly.

@@ -1,0 +1,27 @@
+groups:
+  - name: containers.critical
+    rules:
+      # Mark critical app containers by name regex during deployment.
+      # Default watches common self-hosted names; adjust for your stack.
+      - alert: CriticalContainerDown
+        expr: |
+          (
+            time() - container_last_seen{name=~"jellyfin|homeassistant|home-assistant|ollama|github-runner"}
+          ) > 120
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical container missing metrics ({{ $labels.name }})"
+          description: "No cAdvisor samples for this container for over 2 minutes."
+
+  - name: containers.warning
+    rules:
+      - alert: ContainerHighRestarts
+        expr: changes(container_start_time_seconds{name!=""}[30m]) > 5
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container restarting frequently ({{ $labels.name }})"
+          description: "Container start_time changed more than 5 times in 30 minutes."

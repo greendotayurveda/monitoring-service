@@ -1,0 +1,37 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: telegram
+  group_by: ["alertname", "severity"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers:
+        - severity = critical
+      receiver: telegram
+      continue: false
+    - matchers:
+        - severity = warning
+      receiver: telegram
+      repeat_interval: 12h
+
+inhibit_rules:
+  - source_matchers:
+      - severity = critical
+    target_matchers:
+      - severity = warning
+    equal: ["alertname", "instance"]
+
+receivers:
+  - name: telegram
+    telegram_configs:
+      - bot_token: "TELEGRAM_BOT_TOKEN_PLACEHOLDER"
+        chat_id: TELEGRAM_CHAT_ID_PLACEHOLDER
+        parse_mode: HTML
+        send_resolved: true
+        message: '{{ template "telegram.default" . }}'
+
+templates:
+  - /etc/alertmanager/templates/*.tmpl

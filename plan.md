@@ -4,6 +4,9 @@
 
 ### Deployment Directory: `/opt/monitoring-service`
 
+> **Implementation docs:** living knowledge base is in [`brain/`](brain/README.md).  
+> Update `brain/` whenever application/config changes (enforced by `.cursor/rules/brain-docs.mdc`).
+
 ---
 
 # Version

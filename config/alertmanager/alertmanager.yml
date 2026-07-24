@@ -1,0 +1,15 @@
+# Generated at container start from alertmanager.yml.template when Telegram
+# credentials are present. This checked-in fallback uses a no-op receiver so
+# Prometheus can still load Alertmanager without secrets during bootstrap.
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: "null"
+  group_by: ["alertname", "severity"]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: "null"
