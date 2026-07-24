@@ -13,7 +13,7 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
-          "expr": "{job=\"docker\"} |= ``",
+          "expr": "{job=\"docker\"}",
           "refId": "A"
         }
       ],
@@ -55,5 +55,5 @@
   "timezone": "browser",
   "title": "Logs",
   "uid": "ms-logs",
-  "version": 1
+  "version": 2
 }

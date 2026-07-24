@@ -15,12 +15,9 @@ datasources:
     type: loki
     access: proxy
     uid: loki
-    url: http://loki:3100
+    # Loki common.path_prefix is /loki — Grafana must include it
+    url: http://loki:3100/loki
     editable: false
     jsonData:
       maxLines: 1000
-      derivedFields:
-        - datasourceUid: prometheus
-          matcherRegex: "container=(\\S+)"
-          name: Container
-          url: ""
+      timeout: 60

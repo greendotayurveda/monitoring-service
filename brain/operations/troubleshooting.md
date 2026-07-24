@@ -59,6 +59,46 @@ grep -E 'GRAFANA_PORT|3010' .env || echo 'GRAFANA_PORT=3010' | sudo tee -a .env
 docker compose up -d --force-recreate grafana
 ```
 
+## Grafana Explore → Loki returns no logs
+
+**Common causes on this stack:**
+
+1. **Wrong datasource URL** — Loki uses `path_prefix: /loki`, so Grafana must use `http://loki:3100/loki` (not `http://loki:3100`).
+2. **Promtail `__path__` relabel** — breaks native Docker SD; use Docker API scrape only.
+3. **`drop: older_than`** — can drop *all* lines if timestamps are missing/epoch.
+4. **Old samples rejected** — first backfill 400s; wait for live lines or raise `reject_old_samples_max_age`.
+
+**Fix on server:**
+
+```bash
+cd /opt/monitoring-service
+# sync updated:
+#   config/loki/config.yml
+#   config/promtail/config.yml
+#   config/grafana/provisioning/datasources/datasources.yml
+#   docker-compose.yml (promtail data/promtail mount)
+
+sudo mkdir -p data/promtail
+sudo chmod a+rwX data/promtail
+docker compose up -d --force-recreate loki promtail grafana
+sleep 5
+
+# Verify Loki sees label values:
+curl -sG "http://127.0.0.1:3100/loki/api/v1/labels" || \
+  docker exec ms-loki wget -qO- http://localhost:3100/loki/api/v1/labels
+
+docker exec ms-loki wget -qO- 'http://localhost:3100/loki/api/v1/label/job/values'
+docker logs ms-promtail --tail 20
+```
+
+In Grafana Explore try (last 15m):
+
+- `{job="docker"}`
+- `{job=~".+"}`
+- `{container=~".+"}`
+
+If label API is empty, Promtail is still not successfully writing. If labels exist but Explore is empty, hard-refresh Grafana (datasource cache) or restart `ms-grafana`.
+
 ## Promtail: `entry too far behind` / HTTP 400 to Loki
 
 **Cause:** On first start (or when positions are lost in `/tmp`), Promtail backfills old Docker JSON logs. Loki rejects entries older than its accept window (`reject_old_samples_max_age`) or already behind the stream head.

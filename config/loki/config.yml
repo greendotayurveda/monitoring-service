@@ -6,6 +6,7 @@ server:
   log_level: info
 
 common:
+  instance_addr: 127.0.0.1
   path_prefix: /loki
   storage:
     filesystem:
@@ -13,7 +14,6 @@ common:
       rules_directory: /loki/rules
   replication_factor: 1
   ring:
-    instance_addr: 127.0.0.1
     kvstore:
       store: inmemory
 
@@ -37,7 +37,6 @@ storage_config:
 limits_config:
   retention_period: 336h
   reject_old_samples: true
-  # Match retention so first-time Docker backfill is not rejected as "too far behind"
   reject_old_samples_max_age: 336h
   unordered_writes: true
   ingestion_rate_mb: 16
