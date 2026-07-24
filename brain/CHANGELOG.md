@@ -2,8 +2,8 @@
 
 ## 2026-07-24
 
-- Publish Loki on host port **3100** (`LOKI_PORT`) for API/debug; remind that Loki has no browse UI (use Grafana Explore).
-- Loki: inline `sh -c` entrypoint + `tmpfs` on `/wal`; WAL disabled via `-ingester.wal-enabled=false`.
+- Documented empty Explore when Promtail Docker positions advance during Loki recreate (`empty ring` / DNS); fix = clear `data/promtail/positions.yaml` and restart Promtail after Loki is ready.
+- Publish Loki on host port **3100** (`LOKI_PORT`) for API/debug; remind that Loki has no browse UI (use Grafana Explore).- Loki: inline `sh -c` entrypoint + `tmpfs` on `/wal`; WAL disabled via `-ingester.wal-enabled=false`.
 
 - Strengthened `fix-permissions.sh` with `chmod a+rwX` + busybox `chown` (handles Docker userns cases where host `chown` alone fails).
 - Confirmed homeserver crash-loop root cause from logs: Prometheus `permission denied` on `/prometheus/queries.active`; Loki `mkdir /loki/rules: permission denied`. Documented in `brain/operations/troubleshooting.md`.
