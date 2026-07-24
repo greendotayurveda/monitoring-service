@@ -61,30 +61,27 @@ docker compose up -d --force-recreate grafana
 
 ## Loki: `creating WAL folder at "/wal": mkdir wal: permission denied`
 
-**Cause:** Loki writes its ingester WAL to `/wal` by default. That path is on the container root FS and is not writable by uid `10001`.
+**Cause:** Loki image runs as uid `10001` and tries to create `/wal`. On this host that fails even with bind mounts / chown (userns / ownership mismatch).
 
-**Fix in repo:** bind-mount host data onto those root paths:
-
-- `./data/loki/wal` → `/wal`
-- `./data/loki/rules` → `/rules`
-- `./data/loki` → `/loki`
+**Fix in repo (homeserver- pragmatic):**
+- Run Loki as `user: "0:0"`
+- Disable ingester WAL (`ingester.wal.enabled: false`) — chunks still persist on `./data/loki`
+- Keep binds `./data/loki/wal:/wal` and `./data/loki/rules:/rules`
 
 ```bash
 cd /opt/monitoring-service
 git pull
+grep -n 'user:' docker-compose.yml | head -5
+grep -A3 'wal:' config/loki/config.yml
 sudo mkdir -p data/loki/wal data/loki/rules data/loki/rules-temp
 sudo chmod -R a+rwX data/loki
-./scripts/fix-permissions.sh
 docker compose up -d --force-recreate loki
+docker inspect ms-loki --format 'user={{.Config.User}} mounts={{range .Mounts}}{{.Destination}} {{end}}'
 docker compose ps | grep loki
 docker logs --tail 20 ms-loki
 ```
 
-## Why healthchecks use `localhost` / `127.0.0.1`
-
-Docker `healthcheck` runs **inside** the container. So `http://127.0.0.1:3100/ready` means “is Loki healthy on itself?”, not your Windows PC and not Tailscale.
-
-Grafana (from another container) still uses `http://loki:3100` on the Docker network.
+Expect `user=0:0` and status **Up** (not Restarting).
 
 ## Grafana Explore → `lookup loki on 127.0.0.11:53: server misbehaving`
 

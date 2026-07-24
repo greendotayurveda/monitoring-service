@@ -2,9 +2,9 @@
 
 ## 2026-07-24
 
-- Fixed Loki `/wal` permission denied by bind-mounting `./data/loki/wal:/wal` and `./data/loki/rules:/rules` (works with Loki's default paths).
+- Loki homeserver fix: run as `user: "0:0"` and disable ingester WAL to stop `/wal` permission denied crash-loop; chunks still persist under `./data/loki`.
 - Documented that healthcheck `localhost` is inside the container, not Tailscale/Windows.
-- Hardened Loki WAL fix attempts via working_dir/CLI; DNS alias for Grafana→Loki; git pull-on-server workflow.
+- Bind-mounts for `/wal` and `/rules`; Grafana→Loki DNS alias; git pull-on-server workflow.
 - Strengthened `fix-permissions.sh` with `chmod a+rwX` + busybox `chown` (handles Docker userns cases where host `chown` alone fails).
 - Confirmed homeserver crash-loop root cause from logs: Prometheus `permission denied` on `/prometheus/queries.active`; Loki `mkdir /loki/rules: permission denied`. Documented in `brain/operations/troubleshooting.md`.
 - Homeserver still on old compose: Grafana bind fails on **:3000**; must use **:3010**.

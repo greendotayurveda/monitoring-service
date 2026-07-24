@@ -85,17 +85,14 @@ services:
     image: grafana/loki:3.1.1
     container_name: ms-loki
     restart: unless-stopped
-    user: "10001:10001"
-    working_dir: /loki
+    # Image defaults to uid 10001 which cannot create /wal on many hosts.
+    # Root is acceptable for this single-node homeserver; data still lives under ./data/loki.
+    user: "0:0"
     command:
       - -config.file=/etc/loki/config.yml
-      - -ingester.wal.dir=/wal
-      - -ruler.storage.local.directory=/rules
-      - -ruler.rule_path=/loki/rules-temp
     volumes:
       - ./config/loki/config.yml:/etc/loki/config.yml:ro
       - ./data/loki:/loki
-      # Loki defaults / expects these root paths — bind them onto the data volume
       - ./data/loki/wal:/wal
       - ./data/loki/rules:/rules
     expose:
@@ -110,7 +107,7 @@ services:
           cpus: "1.0"
           memory: 1G
     healthcheck:
-      # Runs INSIDE the Loki container (localhost = Loki itself, not your PC/Tailscale)
+      # Runs INSIDE the Loki container (127.0.0.1 = Loki itself, not Tailscale/Windows)
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3100/ready"]
       interval: 30s
       timeout: 10s
