@@ -61,27 +61,33 @@ docker compose up -d --force-recreate grafana
 
 ## Loki: `creating WAL folder at "/wal": mkdir wal: permission denied`
 
-**Cause:** Loki image runs as uid `10001` and tries to create `/wal`. On this host that fails even with bind mounts / chown (userns / ownership mismatch).
+**Cause:** Loki still enables WAL unless disabled with the **hyphenated** flag `-ingester.wal-enabled=false` (not `ingester.wal.enabled`). Old containers may also still be running.
 
-**Fix in repo (homeserver- pragmatic):**
-- Run Loki as `user: "0:0"`
-- Disable ingester WAL (`ingester.wal.enabled: false`) — chunks still persist on `./data/loki`
-- Keep binds `./data/loki/wal:/wal` and `./data/loki/rules:/rules`
+**Fix in repo:**
+- CLI `-ingester.wal-enabled=false`
+- Root entrypoint `scripts/loki-entrypoint.sh` creates `/wal`
+- `user: "0:0"`
 
 ```bash
 cd /opt/monitoring-service
 git pull
-grep -n 'user:' docker-compose.yml | head -5
-grep -A3 'wal:' config/loki/config.yml
+# MUST show wal-enabled=false:
+grep -n 'wal-enabled' docker-compose.yml
+
 sudo mkdir -p data/loki/wal data/loki/rules data/loki/rules-temp
 sudo chmod -R a+rwX data/loki
+chmod +x scripts/loki-entrypoint.sh
+
+docker compose stop loki
+docker rm -f ms-loki 2>/dev/null || true
 docker compose up -d --force-recreate loki
-docker inspect ms-loki --format 'user={{.Config.User}} mounts={{range .Mounts}}{{.Destination}} {{end}}'
+
+docker inspect ms-loki --format 'user={{.Config.User}} cmd={{json .Config.Cmd}}'
 docker compose ps | grep loki
 docker logs --tail 20 ms-loki
 ```
 
-Expect `user=0:0` and status **Up** (not Restarting).
+If `cmd` does not contain `wal-enabled=false`, you are not on the latest pull.
 
 ## Why healthchecks use `localhost` / `127.0.0.1`
 
