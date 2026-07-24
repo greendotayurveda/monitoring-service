@@ -22,13 +22,14 @@ UI (default bind `127.0.0.1`):
 
 | Service      | URL (defaults)              |
 | ------------ | --------------------------- |
-| Grafana      | http://127.0.0.1:3000       |
+| Grafana      | http://127.0.0.1:3010       |
 | Prometheus   | http://127.0.0.1:9090       |
 | Alertmanager | http://127.0.0.1:9093       |
-| Loki         | http://127.0.0.1:3100       |
 | Uptime Kuma  | http://127.0.0.1:3002       |
 
-Host ports are overridable in `.env` (`UPTIME_KUMA_PORT`, `GRAFANA_PORT`, …).  
-Uptime Kuma defaults to **3002** because **3001** is often already taken.
+Loki / cAdvisor / Node Exporter are **internal-only** (no host ports).  
+On a host that already has Grafana, use **3010** — do not assume `:3000` is this stack.
+
+Homeserver recovery: `./scripts/apply-homeserver-fix.sh`
 
 See [brain/operations/deploy.md](brain/operations/deploy.md) for full deployment steps.

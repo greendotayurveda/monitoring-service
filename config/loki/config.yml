@@ -6,7 +6,6 @@ server:
   log_level: info
 
 common:
-  instance_addr: 127.0.0.1
   path_prefix: /loki
   storage:
     filesystem:
@@ -14,12 +13,13 @@ common:
       rules_directory: /loki/rules
   replication_factor: 1
   ring:
+    instance_addr: 127.0.0.1
     kvstore:
       store: inmemory
 
 schema_config:
   configs:
-    - from: "2024-01-01"
+    - from: "2020-10-24"
       store: tsdb
       object_store: filesystem
       schema: v13
@@ -41,7 +41,8 @@ limits_config:
   ingestion_rate_mb: 8
   ingestion_burst_size_mb: 16
   max_query_lookback: 336h
-  allow_structured_metadata: true
+  allow_structured_metadata: false
+  volume_enabled: true
 
 compactor:
   working_directory: /loki/compactor
@@ -49,17 +50,6 @@ compactor:
   retention_enabled: true
   retention_delete_delay: 2h
   delete_request_store: filesystem
-
-ruler:
-  storage:
-    type: local
-    local:
-      directory: /loki/rules
-  rule_path: /loki/rules-temp
-  ring:
-    kvstore:
-      store: inmemory
-  alertmanager_url: http://alertmanager:9093
 
 analytics:
   reporting_enabled: false

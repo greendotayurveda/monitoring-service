@@ -2,12 +2,13 @@
 
 ## 2026-07-24
 
-- Port conflict note: on homeserver, host **3001** was already used by an existing container named `grafana` (`0.0.0.0:3001->3000/tcp`), not by this stack. Uptime Kuma must not bind 3001 there.
-- Fixed Uptime Kuma host port conflict: default host port is now **3002** (`UPTIME_KUMA_PORT`) because **3001** is often already allocated.
-- Made all published host ports overridable via `.env` (`GRAFANA_PORT`, `PROMETHEUS_PORT`, etc.).
-- Updated `scripts/health-check.sh` to read port overrides from `.env`.
-- Documented port-conflict recovery in `brain/reference/ports.md`.
-
+- Homeserver recovery: cAdvisor/Node Exporter/Loki no longer publish host ports (avoids **8080** clash; scrape stays on Docker network).
+- Default `GRAFANA_PORT` changed to **3010** (host **3000** already has another Grafana).
+- Added `scripts/fix-permissions.sh` and `scripts/apply-homeserver-fix.sh` for data dir ownership (Prometheus 65534, Loki 10001, Grafana 472).
+- Simplified Loki config (`allow_structured_metadata: false`, ring `instance_addr` under `common.ring`).
+- Health-check now verifies `ms-*` container names and internal endpoints (avoids false OK from other stacks on 3000/3001/8080).
+- Port conflict note: host **3001** used by existing container `grafana`; **8080** already allocated on homeserver.
+- Uptime Kuma default host port **3002** (`UPTIME_KUMA_PORT`).
 - Initial MVP scaffold created from corrected `plan.md`.
 - Added Compose stack: Prometheus, Node Exporter, cAdvisor, Loki, Promtail, Grafana, Alertmanager, Uptime Kuma.
 - Added Prometheus rules with `for:` durations (host + containers).

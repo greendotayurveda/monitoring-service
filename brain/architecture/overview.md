@@ -29,14 +29,15 @@ The monitoring stack **observes** host and containers. It does **not** create, u
 
 ```text
 data/
-  grafana/
-  prometheus/
-  loki/
-  alertmanager/
+  grafana/        # uid 472
+  prometheus/     # uid 65534
+  loki/           # uid 10001
+  alertmanager/   # uid 65534
   uptime-kuma/
 ```
 
-Configs are read-only mounts from `config/`.
+Configs are read-only mounts from `config/`.  
+Run `scripts/fix-permissions.sh` after first copy to the server (or when containers crash-loop on permission denied).
 
 ## Post-MVP (not in critical path)
 

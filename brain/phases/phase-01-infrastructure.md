@@ -10,6 +10,7 @@
 - [x] `.env.example` + local `.env` template copy
 - [x] Backup/restore/update/health/cleanup script skeletons
 - [x] Documented publish strategy (`BIND_ADDRESS`)
+- [x] `scripts/fix-permissions.sh` for bind-mount ownership
 
 ## How to complete on server
 
@@ -18,6 +19,7 @@ cd /opt/monitoring-service
 cp .env.example .env
 # set GF_SECURITY_ADMIN_PASSWORD
 chmod +x scripts/*.sh
+./scripts/fix-permissions.sh
 # network is created automatically by compose
 ```
 

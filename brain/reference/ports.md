@@ -1,27 +1,42 @@
 # Ports
 
-All host binds use `${BIND_ADDRESS:-127.0.0.1}` plus overridable host ports from `.env`.
+## Published to host (defaults)
+
+All host binds use `${BIND_ADDRESS:-127.0.0.1}`.
 
 | Default host port | Env var | Container port | Service |
 | ----------------- | ------- | -------------- | ------- |
-| 3000 | `GRAFANA_PORT` | 3000 | Grafana |
+| 3010 | `GRAFANA_PORT` | 3000 | Grafana (`ms-grafana`) |
 | 3002 | `UPTIME_KUMA_PORT` | 3001 | Uptime Kuma |
 | 9090 | `PROMETHEUS_PORT` | 9090 | Prometheus |
 | 9093 | `ALERTMANAGER_PORT` | 9093 | Alertmanager |
-| 3100 | `LOKI_PORT` | 3100 | Loki |
-| 9100 | `NODE_EXPORTER_PORT` | 9100 | Node Exporter |
-| 8080 | `CADVISOR_PORT` | 8080 | cAdvisor |
 
-Promtail listens internally on `9080` (not published).
+## Internal only (no host publish)
+
+These are scraped/reached on the `monitoring` Docker network only:
+
+| Service | Container port |
+| ------- | -------------- |
+| Node Exporter | 9100 |
+| cAdvisor | 8080 |
+| Loki | 3100 |
+| Promtail | 9080 |
+
+## Homeserver conflict map (observed)
+
+| Host port | Already used by | Our stack choice |
+| --------- | --------------- | ---------------- |
+| 3000 | Existing Grafana UI | `ms-grafana` → **3010** |
+| 3001 | Container `grafana` (`3001->3000`) | Uptime Kuma → **3002** |
+| 8080 | Existing service | cAdvisor **not published** |
 
 ## Port conflicts
 
 If Compose fails with `Bind for … failed: port is already allocated`:
 
-1. Find the process/container: `sudo ss -tlnp | grep <port>` or `docker ps --format '{{.Names}} {{.Ports}}'`
-2. Either stop the other service, or set a free host port in `.env` (e.g. `UPTIME_KUMA_PORT=3002`)
-3. Re-run `docker compose up -d`
+1. `sudo ss -tlnp | grep <port>`
+2. `docker ps --format '{{.Names}}\t{{.Ports}}' | grep <port>`
+3. Change the matching `*_PORT` in `.env`, or keep exporters internal-only
+4. `docker compose up -d`
 
-Uptime Kuma host port defaults to **3002** because **3001** is commonly already allocated.
-
-Known homeserver finding: an existing container named `grafana` publishes `0.0.0.0:3001->3000/tcp`. That is separate from `ms-grafana` in this stack.
+**Important:** `curl http://127.0.0.1:3000` may hit an *existing* Grafana, not `ms-grafana`. Always check container name `ms-grafana` and port `GRAFANA_PORT`.
