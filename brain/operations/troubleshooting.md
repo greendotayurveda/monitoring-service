@@ -59,6 +59,29 @@ grep -E 'GRAFANA_PORT|3010' .env || echo 'GRAFANA_PORT=3010' | sudo tee -a .env
 docker compose up -d --force-recreate grafana
 ```
 
+## Promtail: `entry too far behind` / HTTP 400 to Loki
+
+**Cause:** On first start (or when positions are lost in `/tmp`), Promtail backfills old Docker JSON logs. Loki rejects entries older than its accept window (`reject_old_samples_max_age`) or already behind the stream head.
+
+**Impact:** Noisy logs; **recent** logs still ingest once Promtail catches up. Not a crash.
+
+**Fix (in repo):**
+- Promtail drops lines older than **24h** before push
+- Positions file persisted under `data/promtail/`
+- Loki `reject_old_samples_max_age: 336h` + `unordered_writes: true`
+
+On the server after syncing configs:
+
+```bash
+cd /opt/monitoring-service
+sudo mkdir -p data/promtail
+sudo chmod a+rwX data/promtail
+docker compose up -d --force-recreate loki promtail
+docker logs ms-promtail --tail 30
+```
+
+In Grafana Explore → Loki, query `{job="docker"}` for the last 15 minutes — you should see fresh lines even if a few 400s remain during catch-up.
+
 ## Tailscale: Jellyfin works but Grafana :3010 does not
 
 **Cause:** `ms-grafana` was published on `127.0.0.1` only. Jellyfin/qBittorrent listen on `0.0.0.0`, so `http://100.x.x.x:<port>` works for them.

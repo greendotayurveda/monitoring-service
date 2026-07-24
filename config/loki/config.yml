@@ -37,9 +37,11 @@ storage_config:
 limits_config:
   retention_period: 336h
   reject_old_samples: true
-  reject_old_samples_max_age: 168h
-  ingestion_rate_mb: 8
-  ingestion_burst_size_mb: 16
+  # Match retention so first-time Docker backfill is not rejected as "too far behind"
+  reject_old_samples_max_age: 336h
+  unordered_writes: true
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
   max_query_lookback: 336h
   allow_structured_metadata: false
   volume_enabled: true

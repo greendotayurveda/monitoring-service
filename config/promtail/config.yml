@@ -3,7 +3,7 @@ server:
   grpc_listen_port: 0
 
 positions:
-  filename: /tmp/positions.yaml
+  filename: /positions/positions.yaml
 
 clients:
   - url: http://loki:3100/loki/api/v1/push
@@ -24,6 +24,11 @@ scrape_configs:
       - source_labels: ["__meta_docker_container_id"]
         target_label: __path__
         replacement: /var/lib/docker/containers/$1/*-json.log
+    # Skip ancient Docker JSON history on first scrape (avoids Loki 400 "entry too far behind")
+    pipeline_stages:
+      - drop:
+          older_than: 24h
+          drop_counter_reason: older_than_24h
 
   - job_name: journal
     journal:
