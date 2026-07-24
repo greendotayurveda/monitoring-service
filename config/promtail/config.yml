@@ -9,7 +9,7 @@ clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
-  # File-tail Docker json-file logs (reliable). Requires default json-file log driver.
+  # File-tail Docker json-file logs. Requires default json-file log driver.
   - job_name: docker
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
@@ -24,17 +24,19 @@ scrape_configs:
         target_label: compose_service
       - source_labels: ["__meta_docker_container_label_com_docker_compose_project"]
         target_label: compose_project
+      # New stream identity so prior failed backfills cannot block with "too far behind"
+      - target_label: scrape
+        replacement: json-file
     pipeline_stages:
       - docker: {}
-      # Skip historical backfill — Loki rejects lines too far behind the stream head
-      # ("entry too far behind"). Without this, positions resets spam 400s for hours.
+      # Only ship recent lines (avoids multi-hour backfill 400s after positions reset)
       - drop:
-          older_than: 2h
-          drop_counter_reason: older_than_2h
+          older_than: 1h
+          drop_counter_reason: older_than_1h
 
   - job_name: journal
     journal:
-      max_age: 12h
+      max_age: 2h
       path: /var/log/journal
       labels:
         job: systemd-journal
@@ -46,5 +48,5 @@ scrape_configs:
         target_label: hostname
     pipeline_stages:
       - drop:
-          older_than: 2h
-          drop_counter_reason: older_than_2h
+          older_than: 1h
+          drop_counter_reason: older_than_1h
