@@ -15,7 +15,7 @@ datasources:
     type: loki
     access: proxy
     uid: loki
-    # No path_prefix on Loki — use root URL
+    # Base URL only — Grafana appends /loki/api/v1/...
     url: http://loki:3100
     editable: false
     jsonData:

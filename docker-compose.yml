@@ -93,7 +93,9 @@ services:
     expose:
       - "3100"
     networks:
-      - monitoring
+      monitoring:
+        aliases:
+          - loki
     deploy:
       resources:
         limits:
@@ -104,6 +106,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 20s
 
   promtail:
     image: grafana/promtail:3.1.1
@@ -121,7 +124,8 @@ services:
     networks:
       - monitoring
     depends_on:
-      - loki
+      loki:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -149,8 +153,10 @@ services:
     networks:
       - monitoring
     depends_on:
-      - prometheus
-      - loki
+      loki:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
     deploy:
       resources:
         limits:

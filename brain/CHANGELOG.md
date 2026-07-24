@@ -2,11 +2,11 @@
 
 ## 2026-07-24
 
+- Fixed Grafana→Loki DNS/`server misbehaving`: keep service on `monitoring` network with alias `loki`; Promtail push URL restored to `/loki/api/v1/push` (Grafana queries that prefix); healthy `depends_on` for Grafana/Promtail.
 - Documented git workflow: commit/push only from Windows repo; homeserver `git pull` + compose recreate (no hand-edited YAML on server).
-- Fixed Loki Explore **404**: removed Loki `path_prefix`; Grafana `http://loki:3100`; Promtail `http://loki:3100/api/v1/push`.
-- Fixed empty Grafana Loki Explore: Promtail Docker SD without `__path__`; removed `drop.older_than`.
-- Promtail/Loki: persist positions in `data/promtail`; Loki `reject_old_samples_max_age: 336h` + `unordered_writes`.
-- Tailscale access: default `.env.example` uses `BIND_ADDRESS=0.0.0.0` for Jellyfin-like access.
+- Fixed Loki Explore path handling; Grafana datasource base `http://loki:3100`.
+- Promtail Docker SD without `__path__`; positions in `data/promtail`.
+- Tailscale: `BIND_ADDRESS=0.0.0.0` for Jellyfin-like access.
 - Strengthened `fix-permissions.sh` with `chmod a+rwX` + busybox `chown` (handles Docker userns cases where host `chown` alone fails).
 - Confirmed homeserver crash-loop root cause from logs: Prometheus `permission denied` on `/prometheus/queries.active`; Loki `mkdir /loki/rules: permission denied`. Documented in `brain/operations/troubleshooting.md`.
 - Homeserver still on old compose: Grafana bind fails on **:3000**; must use **:3010**.

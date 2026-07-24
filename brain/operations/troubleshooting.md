@@ -59,6 +59,33 @@ grep -E 'GRAFANA_PORT|3010' .env || echo 'GRAFANA_PORT=3010' | sudo tee -a .env
 docker compose up -d --force-recreate grafana
 ```
 
+## Grafana Explore → `lookup loki on 127.0.0.11:53: server misbehaving`
+
+**Cause:** `ms-grafana` cannot resolve Docker DNS name `loki` (wrong/missing network, Loki down, or broken Docker DNS).
+
+**Check:**
+
+```bash
+docker compose ps
+docker network inspect monitoring --format '{{range .Containers}}{{.Name}} {{end}}'
+docker exec ms-grafana wget -qO- http://loki:3100/ready
+docker exec ms-grafana getent hosts loki
+```
+
+**Fix:**
+
+```bash
+cd /opt/monitoring-service
+git pull
+docker compose up -d --force-recreate loki promtail grafana
+# if DNS still broken:
+docker compose down
+docker network rm monitoring || true
+docker compose up -d
+```
+
+Confirm you are on **ms-grafana :3010**, not the old `grafana` on :3001 (that container is not on the `monitoring` network).
+
 ## Grafana Explore → Loki returns 404
 
 **Cause:** Grafana datasource URL did not match Loki's HTTP path. With `path_prefix: /loki`, URL must be `http://loki:3100/loki`. A mismatch produces **404** on `{job="docker"}`.
