@@ -22,4 +22,6 @@ If Compose fails with `Bind for … failed: port is already allocated`:
 2. Either stop the other service, or set a free host port in `.env` (e.g. `UPTIME_KUMA_PORT=3002`)
 3. Re-run `docker compose up -d`
 
-Uptime Kuma host port defaults to **3002** because **3001** is commonly used by an existing Kuma instance.
+Uptime Kuma host port defaults to **3002** because **3001** is commonly already allocated.
+
+Known homeserver finding: an existing container named `grafana` publishes `0.0.0.0:3001->3000/tcp`. That is separate from `ms-grafana` in this stack.

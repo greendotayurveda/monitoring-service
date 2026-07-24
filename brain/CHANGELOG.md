@@ -2,6 +2,7 @@
 
 ## 2026-07-24
 
+- Port conflict note: on homeserver, host **3001** was already used by an existing container named `grafana` (`0.0.0.0:3001->3000/tcp`), not by this stack. Uptime Kuma must not bind 3001 there.
 - Fixed Uptime Kuma host port conflict: default host port is now **3002** (`UPTIME_KUMA_PORT`) because **3001** is often already allocated.
 - Made all published host ports overridable via `.env` (`GRAFANA_PORT`, `PROMETHEUS_PORT`, etc.).
 - Updated `scripts/health-check.sh` to read port overrides from `.env`.
