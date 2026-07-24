@@ -61,30 +61,30 @@ docker compose up -d --force-recreate grafana
 
 ## Loki: `creating WAL folder at "/wal": mkdir wal: permission denied`
 
-**Cause:** Ingester default WAL path is `/wal` on the container root. Loki runs as uid `10001` and cannot create it there.
+**Cause:** Loki writes its ingester WAL to `/wal` by default. That path is on the container root FS and is not writable by uid `10001`.
 
-**Fix in repo:**
-- `ingester.wal.dir: /loki/wal`
-- Compose CLI override `-ingester.wal.dir=/loki/wal`
-- `working_dir: /loki` so relative defaults also land on the data volume
+**Fix in repo:** bind-mount host data onto those root paths:
+
+- `./data/loki/wal` → `/wal`
+- `./data/loki/rules` → `/rules`
+- `./data/loki` → `/loki`
 
 ```bash
 cd /opt/monitoring-service
 git pull
-# Confirm the new flags are present:
-grep -A8 'container_name: ms-loki' docker-compose.yml | head -20
-grep -A3 'wal:' config/loki/config.yml
-
 sudo mkdir -p data/loki/wal data/loki/rules data/loki/rules-temp
 sudo chmod -R a+rwX data/loki
 ./scripts/fix-permissions.sh
 docker compose up -d --force-recreate loki
-# Verify running config inside container:
-docker exec ms-loki wget -qO- http://localhost:3100/ready || true
-docker logs --tail 30 ms-loki
+docker compose ps | grep loki
+docker logs --tail 20 ms-loki
 ```
 
-If logs still show `"/wal"`, the container did not pick up the new compose command — run `docker compose down` then `docker compose up -d`.
+## Why healthchecks use `localhost` / `127.0.0.1`
+
+Docker `healthcheck` runs **inside** the container. So `http://127.0.0.1:3100/ready` means “is Loki healthy on itself?”, not your Windows PC and not Tailscale.
+
+Grafana (from another container) still uses `http://loki:3100` on the Docker network.
 
 ## Grafana Explore → `lookup loki on 127.0.0.11:53: server misbehaving`
 

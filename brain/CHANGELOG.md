@@ -2,12 +2,9 @@
 
 ## 2026-07-24
 
-- Hardened Loki WAL fix: compose now sets `working_dir: /loki`, user `10001`, and CLI `-ingester.wal.dir=/loki/wal` (config-only was still resolving to `/wal` on homeserver).
-- Fixed Loki crash-loop: set `ingester.wal.dir: /loki/wal` (default `/wal` is not writable for uid 10001).
-- Fixed Grafana→Loki DNS/`server misbehaving`: keep service on `monitoring` network with alias `loki`; Promtail push URL restored to `/loki/api/v1/push`; healthy `depends_on` for Grafana/Promtail.
-- Documented git workflow: commit/push only from Windows repo; homeserver `git pull` + compose recreate.
-- Promtail Docker SD without `__path__`; positions in `data/promtail`.
-- Tailscale: `BIND_ADDRESS=0.0.0.0` for Jellyfin-like access.
+- Fixed Loki `/wal` permission denied by bind-mounting `./data/loki/wal:/wal` and `./data/loki/rules:/rules` (works with Loki's default paths).
+- Documented that healthcheck `localhost` is inside the container, not Tailscale/Windows.
+- Hardened Loki WAL fix attempts via working_dir/CLI; DNS alias for Grafana→Loki; git pull-on-server workflow.
 - Strengthened `fix-permissions.sh` with `chmod a+rwX` + busybox `chown` (handles Docker userns cases where host `chown` alone fails).
 - Confirmed homeserver crash-loop root cause from logs: Prometheus `permission denied` on `/prometheus/queries.active`; Loki `mkdir /loki/rules: permission denied`. Documented in `brain/operations/troubleshooting.md`.
 - Homeserver still on old compose: Grafana bind fails on **:3000**; must use **:3010**.

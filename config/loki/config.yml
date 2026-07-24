@@ -33,11 +33,11 @@ storage_config:
     active_index_directory: /loki/tsdb-index
     cache_location: /loki/tsdb-cache
 
-# Default WAL path is /wal (not writable). Force data-volume paths.
+# WAL / rules paths: compose bind-mounts ./data/loki/wal -> /wal and ./data/loki/rules -> /rules
 ingester:
   wal:
     enabled: true
-    dir: /loki/wal
+    dir: /wal
   lifecycler:
     ring:
       kvstore:
@@ -49,7 +49,7 @@ ruler:
   storage:
     type: local
     local:
-      directory: /loki/rules
+      directory: /rules
   rule_path: /loki/rules-temp
   ring:
     kvstore:
