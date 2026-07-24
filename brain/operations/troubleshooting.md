@@ -83,6 +83,12 @@ docker logs --tail 20 ms-loki
 
 Expect `user=0:0` and status **Up** (not Restarting).
 
+## Why healthchecks use `localhost` / `127.0.0.1`
+
+Docker `healthcheck` runs **inside** the container. So `http://127.0.0.1:3100/ready` means “is Loki healthy on itself?”, not your Windows PC and not Tailscale.
+
+Grafana (from another container) still uses `http://loki:3100` on the Docker network.
+
 ## Grafana Explore → `lookup loki on 127.0.0.11:53: server misbehaving`
 
 **Cause:** `ms-grafana` cannot resolve Docker DNS name `loki` (wrong/missing network, Loki down, or broken Docker DNS).
