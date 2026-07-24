@@ -6,10 +6,9 @@ positions:
   filename: /positions/positions.yaml
 
 clients:
-  - url: http://loki:3100/loki/api/v1/push
+  - url: http://loki:3100/api/v1/push
 
 scrape_configs:
-  # Native Docker service discovery (Docker API log stream — do not set __path__)
   - job_name: docker
     docker_sd_configs:
       - host: unix:///var/run/docker.sock

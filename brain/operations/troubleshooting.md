@@ -59,6 +59,17 @@ grep -E 'GRAFANA_PORT|3010' .env || echo 'GRAFANA_PORT=3010' | sudo tee -a .env
 docker compose up -d --force-recreate grafana
 ```
 
+## Grafana Explore → Loki returns 404
+
+**Cause:** Grafana datasource URL did not match Loki's HTTP path. With `path_prefix: /loki`, URL must be `http://loki:3100/loki`. A mismatch produces **404** on `{job="docker"}`.
+
+**Fix used in this repo:** remove Loki `path_prefix` and use root URLs everywhere:
+
+- Grafana datasource: `http://loki:3100`
+- Promtail push: `http://loki:3100/api/v1/push`
+
+On the server, paste the block below, then recreate.
+
 ## Grafana Explore → Loki returns no logs
 
 **Common causes on this stack:**
@@ -72,22 +83,18 @@ docker compose up -d --force-recreate grafana
 
 ```bash
 cd /opt/monitoring-service
-# sync updated:
-#   config/loki/config.yml
-#   config/promtail/config.yml
-#   config/grafana/provisioning/datasources/datasources.yml
-#   docker-compose.yml (promtail data/promtail mount)
-
+# Apply root-URL Loki/Promtail/Grafana datasource configs (see CHANGELOG / repo files)
 sudo mkdir -p data/promtail
 sudo chmod a+rwX data/promtail
 docker compose up -d --force-recreate loki promtail grafana
 sleep 5
 
-# Verify Loki sees label values:
-curl -sG "http://127.0.0.1:3100/loki/api/v1/labels" || \
-  docker exec ms-loki wget -qO- http://localhost:3100/loki/api/v1/labels
-
-docker exec ms-loki wget -qO- 'http://localhost:3100/loki/api/v1/label/job/values'
+docker exec ms-loki wget -qO- http://localhost:3100/ready
+echo
+docker exec ms-loki wget -qO- http://localhost:3100/api/v1/labels
+echo
+docker exec ms-loki wget -qO- http://localhost:3100/api/v1/label/job/values
+echo
 docker logs ms-promtail --tail 20
 ```
 
@@ -98,6 +105,8 @@ In Grafana Explore try (last 15m):
 - `{container=~".+"}`
 
 If label API is empty, Promtail is still not successfully writing. If labels exist but Explore is empty, hard-refresh Grafana (datasource cache) or restart `ms-grafana`.
+
+Verify datasource in Grafana → Connections → Data sources → Loki → URL is `http://loki:3100` (no `/loki` suffix).
 
 ## Promtail: `entry too far behind` / HTTP 400 to Loki
 
