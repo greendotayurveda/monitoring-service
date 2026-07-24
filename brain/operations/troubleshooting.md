@@ -130,24 +130,28 @@ On the server, paste the block below, then recreate.
 
 ## Grafana Explore → `{job="docker"}` empty but `{job="systemd-journal"}` works
 
-**Root cause (seen on this stack):** `pipeline_stages: docker: {}` must only be used when tailing **json-file** logs. With Promtail `docker_sd_configs` (Docker **API** scrape), lines are already plain text; `docker: {}` breaks timestamps and `drop: older_than` then drops **all** Docker lines. Journal keeps working.
+**Cause:** Docker API SD + `drop`/`docker:` pipeline combinations silently dropped container lines. Journal still worked.
 
-**Fix:** Docker job uses API scrape + `drop: older_than: 1h` only (no `docker:` stage). `scrape=docker-api` avoids old stream-head conflicts.
+**Current fix:** file-tail ` /var/lib/docker/containers/*/*-json.log` with `scrape: json-file` (no drop stage).
 
 ```bash
 cd /opt/monitoring-service
 git pull
+grep -A2 'scrape:' config/promtail/config.yml   # must show json-file
+
 docker compose stop promtail
 sudo rm -f data/promtail/positions.yaml
 docker compose up -d --force-recreate promtail
-sleep 20
+sleep 25
+
+# Prove new config is mounted:
+docker exec ms-promtail grep -A1 'scrape:' /etc/promtail/config.yml
 
 curl -s http://127.0.0.1:3100/loki/api/v1/label/job/values; echo
-docker logs ms-promtail --tail 30
-docker exec ms-promtail wget -qO- http://127.0.0.1:9080/metrics | grep -E 'promtail_sent_entries_total|promtail_dropped_entries_total' | head
+docker logs ms-promtail --tail 40
 ```
 
-Expect `["docker","systemd-journal"]`.
+Expect `docker` in job values. First start may briefly log Loki 400s while skipping very old file heads; recent lines should still land.
 
 ## Grafana Explore → Loki returns no logs
 
