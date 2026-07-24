@@ -33,11 +33,12 @@ storage_config:
     active_index_directory: /loki/tsdb-index
     cache_location: /loki/tsdb-cache
 
-# Single-node homeserver: disable ingester WAL to avoid /wal permission fights.
-# Chunks still persist under /loki via filesystem store.
+# Single-node: WAL disabled via config + CLI (-ingester.wal-enabled=false).
+# Chunks still persist under /loki.
 ingester:
   wal:
     enabled: false
+    dir: /loki/wal
   lifecycler:
     ring:
       kvstore:

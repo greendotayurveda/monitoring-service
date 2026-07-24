@@ -85,12 +85,15 @@ services:
     image: grafana/loki:3.1.1
     container_name: ms-loki
     restart: unless-stopped
-    # Image defaults to uid 10001 which cannot create /wal on many hosts.
-    # Root is acceptable for this single-node homeserver; data still lives under ./data/loki.
     user: "0:0"
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
     command:
       - -config.file=/etc/loki/config.yml
+      # Loki flag names use hyphens (not ingester.wal.enabled)
+      - -ingester.wal-enabled=false
+      - -ingester.wal-dir=/loki/wal
     volumes:
+      - ./scripts/loki-entrypoint.sh:/entrypoint.sh:ro
       - ./config/loki/config.yml:/etc/loki/config.yml:ro
       - ./data/loki:/loki
       - ./data/loki/wal:/wal
