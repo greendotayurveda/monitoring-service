@@ -2,6 +2,7 @@
 
 ## 2026-07-24
 
+- Hardened Loki WAL fix: compose now sets `working_dir: /loki`, user `10001`, and CLI `-ingester.wal.dir=/loki/wal` (config-only was still resolving to `/wal` on homeserver).
 - Fixed Loki crash-loop: set `ingester.wal.dir: /loki/wal` (default `/wal` is not writable for uid 10001).
 - Fixed Grafana→Loki DNS/`server misbehaving`: keep service on `monitoring` network with alias `loki`; Promtail push URL restored to `/loki/api/v1/push`; healthy `depends_on` for Grafana/Promtail.
 - Documented git workflow: commit/push only from Windows repo; homeserver `git pull` + compose recreate.

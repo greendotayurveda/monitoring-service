@@ -85,7 +85,14 @@ services:
     image: grafana/loki:3.1.1
     container_name: ms-loki
     restart: unless-stopped
-    command: ["-config.file=/etc/loki/config.yml"]
+    # Ensure relative defaults (wal, rules) land on the data volume
+    working_dir: /loki
+    user: "10001:10001"
+    command:
+      - -config.file=/etc/loki/config.yml
+      - -ingester.wal.dir=/loki/wal
+      - -ruler.storage.local.directory=/loki/rules
+      - -ruler.rule_path=/loki/rules-temp
     volumes:
       - ./config/loki/config.yml:/etc/loki/config.yml:ro
       - ./data/loki:/loki
